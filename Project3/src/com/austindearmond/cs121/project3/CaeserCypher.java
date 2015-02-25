@@ -26,15 +26,104 @@ public class CaeserCypher {
 	private static boolean hasKB = false;
 
 	public static void main(String[] args) {
-		// Begin arguments TODO: Get arguments
-		// NOTE: Make sure that invalid files are set to null.
-		// NOTE: Make sure that decryptArgument is TRUE if key is set.
+		// BEGIN SECTION Arguments {
 		File inputFile = null;
 		File outputFile = null;
 		boolean decryptArgument = false;
 		boolean decrypt = false;
 		byte key = 0;
-		// End arguments
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equalsIgnoreCase("-I")) {
+				if (i+1 >= args.length) {
+					System.out.println("Could not open the input file specified.");
+					continue;
+				}
+				inputFile = new File(args[i + 1]);
+				if (!(inputFile.exists() && inputFile.canRead())) {
+					System.out
+							.println("Could not open the input file specified.");
+					inputFile = null;
+				}
+			} else if (args[i].equalsIgnoreCase("-O")) {
+				if (i+1 >= args.length) {
+					System.out.println("Cannot write to the output path specified.");
+					continue;
+				} else if (args[1+1].startsWith("-")){
+					System.out.println("Cannot write to the output path specified.");
+					continue;
+				}
+				try {
+					outputFile = new File(args[i + 1]);
+					outputFile.createNewFile();
+					if (outputFile.isDirectory() || !outputFile.canWrite()) {
+						System.out
+								.println("Cannot write to the output path specified.");
+						outputFile = null;
+					}
+				} catch (IOException e) {
+					System.out.println("Cannot write to the output path specified.");
+					outputFile = null;
+				}
+				
+			} else if (args[i].equalsIgnoreCase("-K")) {
+				try {
+					key = Byte.parseByte(args[i + 1]);
+					if (key < 1 || key >= 26) {
+						System.out
+								.println("Could not interpret the key argument.");
+						key = 0;
+						continue;
+					}
+					decrypt = false;
+					decryptArgument = true;
+					// Encrypts by default if key is provided.
+				} catch (Exception e) {
+					System.out.println("Could not interpret the key argument.");
+					key = 0;
+				}
+			} else if (args[i].equalsIgnoreCase("-E")) {
+				decrypt = false;
+				decryptArgument = true;
+			} else if (args[i].equalsIgnoreCase("-D")) {
+				decrypt = true;
+				decryptArgument = true;
+			} else if (args[i].toLowerCase().contains("-h")) {
+				System.out
+						.println("Takes an input file, applies Caeser's cypher to it with a given key, and stores the result in an output file.");
+				System.out.println();
+				System.out
+						.println("Caeser's cypher is an elementary way to encode a message.  It moves each alphabetical character in the file a certain number of steps in the alphabet forward, wrapping around to the beginning of the alphabet for letters twoards the end.");
+				System.out.println();
+				System.out
+						.println("For example, if the key for encryption is 3, then");
+				System.out.println("\tAlphabet ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+				System.out.println("gets translated to");
+				System.out.println("\tDoskdehw DEFGHIJKLMNOPQRSTUVWXYZABC");
+				System.out.println();
+				System.out.println("The following arguments are accepted:");
+				System.out
+						.println("\t-i (file)\tThe path to the file to transcode");
+				System.out
+						.println("\t-o (file)\tThe file path to store the results.");
+				System.out
+						.println("\t-k (int 1-26)\tThe key to use for transcoding.");
+				System.out.println("\t-d       \tDecrypt the input file.");
+				System.out
+						.println("\t-e       \tEncrypt the input file (default if key is provided).");
+				System.exit(0);
+			} else if (i == 0) {
+				// Allows a file to be provided without option, but gives option
+				// precedence.
+				inputFile = new File(args[0]);
+				if (!(inputFile.exists() && inputFile.canRead())) {
+					System.out
+							.println("Could not open the input file specified.");
+					inputFile = null;
+				}
+			}
+		}
+		// } END SECTION
+		// BEGIN SECTION Input {
 		if (!decryptArgument) {
 			System.out.println("Would you like to encrypt (E) or decrypt (D)?");
 			int inputOption = getOption(getKB(), new String[] { "e", "d" });
@@ -60,12 +149,15 @@ public class CaeserCypher {
 						.println("What key (between 1 and 26) would you like to use to encrypt your file?");
 			key = getKey(getKB());
 		}
+		// } END SECTION
+		// BEGIN SECTION Execution {
 		try {
 			cypher(inputFile, outputFile, decrypt, key);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		closeKB();
+		// } END SECTION
 	}
 
 	private static Scanner getKB() {
@@ -90,7 +182,6 @@ public class CaeserCypher {
 	 * @return Returns the integer corresponding to the option chosen.
 	 */
 	private static int getOption(Scanner kb, String[] availableOptions) {
-		// TODO: Add quit options.
 		while (true) {
 			String input = kb.nextLine();
 			for (int i = 0; i < availableOptions.length; i++) {
@@ -120,7 +211,6 @@ public class CaeserCypher {
 	 * @return Returns a {@link File} with the input path.
 	 */
 	private static File getFile(Scanner kb, boolean read, boolean write) {
-		// TODO: Add quit options.
 		File file;
 		while (true) {
 			try {
@@ -200,8 +290,10 @@ public class CaeserCypher {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (null != fileReader) fileReader.close();
-			if (null != fileWriter) fileWriter.close();
+			if (null != fileReader)
+				fileReader.close();
+			if (null != fileWriter)
+				fileWriter.close();
 		}
 	}
 }
