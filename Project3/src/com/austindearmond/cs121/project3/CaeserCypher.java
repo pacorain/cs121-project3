@@ -69,8 +69,10 @@ public class CaeserCypher {
 	}
 
 	private static Scanner getKB() {
-		if (!hasKB)
+		if (!hasKB) {
 			kb = new Scanner(System.in);
+			System.out.println("Type QUIT at any time to cancel the operation.");
+		}
 		return kb;
 	}
 
@@ -92,7 +94,7 @@ public class CaeserCypher {
 	private static int getOption(Scanner kb, String[] availableOptions) {
 		while (true) {
 			String input = kb.nextLine();
-			if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+			if (input.toLowerCase().contains("quit")) {
 				kb.close();
 				System.exit(-1);
 			}
@@ -128,7 +130,7 @@ public class CaeserCypher {
 		while (true) {
 			try {
 				input = kb.nextLine();
-				if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+				if (input.toLowerCase().contains("quit")) {
 					kb.close();
 					System.exit(-1);
 				}
@@ -160,7 +162,7 @@ public class CaeserCypher {
 	public static byte getKey(Scanner kb) {
 		while (true) {
 			String input = kb.nextLine();
-			if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+			if (input.toLowerCase().contains("quit")) {
 				kb.close();
 				System.exit(-1);
 			}
