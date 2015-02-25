@@ -26,7 +26,7 @@ public class CaeserCypher {
 	private static boolean hasKB = false;
 
 	public static void main(String[] args) {
-		// Begin arguments TODO: Get arguments
+		// Begin arguments
 		// NOTE: Make sure that invalid files are set to null.
 		// NOTE: Make sure that decryptArgument is TRUE if key is set.
 		File inputFile = null;
@@ -90,9 +90,12 @@ public class CaeserCypher {
 	 * @return Returns the integer corresponding to the option chosen.
 	 */
 	private static int getOption(Scanner kb, String[] availableOptions) {
-		// TODO: Add quit options.
 		while (true) {
 			String input = kb.nextLine();
+			if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+				kb.close();
+				System.exit(-1);
+			}
 			for (int i = 0; i < availableOptions.length; i++) {
 				// Checks, insensitive to case, if the input matches an option.
 				// Is also forgiving of extra input such as spaces or symbols,
@@ -120,11 +123,16 @@ public class CaeserCypher {
 	 * @return Returns a {@link File} with the input path.
 	 */
 	private static File getFile(Scanner kb, boolean read, boolean write) {
-		// TODO: Add quit options.
+		String input;
 		File file;
 		while (true) {
 			try {
-				file = new File(kb.nextLine());
+				input = kb.nextLine();
+				if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+					kb.close();
+					System.exit(-1);
+				}
+				file = new File(input);
 				if (write && !file.exists())
 					file.createNewFile();
 				// Makes sure that files for reading can be read (and therefore
@@ -152,6 +160,10 @@ public class CaeserCypher {
 	public static byte getKey(Scanner kb) {
 		while (true) {
 			String input = kb.nextLine();
+			if ("quit exit cancel stop bye ".contains(input.toLowerCase())) {
+				kb.close();
+				System.exit(-1);
+			}
 			try {
 				byte result = Byte.parseByte(input);
 				if (result > 0 && result <= 26)
