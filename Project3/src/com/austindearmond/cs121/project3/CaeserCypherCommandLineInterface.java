@@ -22,7 +22,7 @@ public class CaeserCypherCommandLineInterface {
 
 	private static Scanner kb; // Only initialized when needed
 	private static boolean hasKB = false;
-	
+
 	private static File inputFile;
 	private static File outputFile;
 	private static Boolean decrypt;
@@ -40,100 +40,112 @@ public class CaeserCypherCommandLineInterface {
 	}
 
 	private static void processArguments(String[] args) {
-		if (isEmpty(args)) return;
+		if (isEmpty(args))
+			return;
 		for (int i = 0; i < args.length; i++) {
-			if (args[i].equalsIgnoreCase("-I")) {
-				if (i+1 >= args.length) {
-					System.out.println("Could not open the input file specified.");
-					continue;
-				}
-				inputFile = new File(args[i + 1]);
-				if (!(inputFile.exists() && inputFile.canRead())) {
-					System.out
-							.println("Could not open the input file specified.");
-					inputFile = null;
-				}
-			} else if (args[i].equalsIgnoreCase("-O")) {
-				if (i+1 >= args.length) {
-					System.out.println("Cannot write to the output path specified.");
-					continue;
-				} else if (args[1+1].startsWith("-")){
-					System.out.println("Cannot write to the output path specified.");
-					continue;
-				}
-				try {
-					outputFile = new File(args[i + 1]);
-					outputFile.createNewFile();
-					if (outputFile.isDirectory() || !outputFile.canWrite()) {
-						System.out
-								.println("Cannot write to the output path specified.");
-						outputFile = null;
-					}
-				} catch (IOException e) {
-					System.out.println("Cannot write to the output path specified.");
-					outputFile = null;
-				}
-				
-			} else if (args[i].equalsIgnoreCase("-K")) {
-				try {
-					key = Byte.parseByte(args[i + 1]);
-					if (key < 1 || key >= 26) {
-						System.out
-								.println("Could not interpret the key argument.");
-						key = 0;
-						continue;
-					}
-					decrypt = false;
-					// Encrypts by default if key is provided.
-				} catch (Exception e) {
-					System.out.println("Could not interpret the key argument.");
-					key = 0;
-				}
-			} else if (args[i].equalsIgnoreCase("-E")) {
-				decrypt = false;
-			} else if (args[i].equalsIgnoreCase("-D")) {
-				decrypt = true;
-			} else if (args[i].toLowerCase().contains("-h")) {
-				System.out
-						.println("Takes an input file, applies Caeser's cypher to it with a given key, and stores the result in an output file.");
-				System.out.println();
-				System.out
-						.println("Caeser's cypher is an elementary way to encode a message.  It moves each alphabetical character in the file a certain number of steps in the alphabet forward, wrapping around to the beginning of the alphabet for letters twoards the end.");
-				System.out.println();
-				System.out
-						.println("For example, if the key for encryption is 3, then");
-				System.out.println("\tAlphabet ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-				System.out.println("gets translated to");
-				System.out.println("\tDoskdehw DEFGHIJKLMNOPQRSTUVWXYZABC");
-				System.out.println();
-				System.out.println("The following arguments are accepted:");
-				System.out
-						.println("\t-i (file)\tThe path to the file to transcode");
-				System.out
-						.println("\t-o (file)\tThe file path to store the results.");
-				System.out
-						.println("\t-k (int 1-26)\tThe key to use for transcoding.");
-				System.out.println("\t-d       \tDecrypt the input file.");
-				System.out
-						.println("\t-e       \tEncrypt the input file (default if key is provided).");
-				System.exit(0);
-			} else if (i == 0) {
-				// Allows a file to be provided without option, but gives option
-				// precedence.
-				inputFile = new File(args[0]);
-				if (!(inputFile.exists() && inputFile.canRead())) {
-					System.out
-							.println("Could not open the input file specified.");
-					inputFile = null;
-				}
+			checkArg(args, i);
+		}
+	}
+
+	private static void checkArg(String[] args, int index) {
+		String value = "";
+		if (index < args.length - 1) {
+			value = args[index + 1];
+		}
+		final String arg = args[index].toLowerCase();
+		// TODO: Create factory
+		switch (arg) {
+		case "--help":
+		case "-h":
+			showHelp();
+			System.exit(0);
+			break;
+		case "--input":
+		case "-i":
+			getInputFile(value);
+			break;
+		case "--output":
+		case "-o":
+			getOutputFile(value);
+			break;
+		case "--key":
+		case "-k":
+			setKey(value);
+			break;
+		case "--encrypt":
+		case "-e":
+			decrypt = false;
+			break;
+		case "--decrypt":
+		case "-d":
+			decrypt = true;
+			break;
+		}
+	}
+
+	public static void getInputFile(String path) {
+		inputFile = new File(path);
+		if (!(inputFile.exists() && inputFile.canRead())) {
+			System.out.println("Could not open the input file specified.");
+			inputFile = null;
+		}
+	}
+
+	public static void getOutputFile(String path) {
+		try {
+			outputFile = new File(path);
+			outputFile.createNewFile();
+			if (outputFile.isDirectory() || !outputFile.canWrite()) {
+				System.out.println("Cannot write to the output path specified.");
+				outputFile = null;
 			}
+		} catch (IOException e) {
+			System.out.println("Cannot write to the output path specified.");
+			outputFile = null;
+		}
+	}
+
+	public static void setKey(String value) {
+		try {
+			key = Byte.parseByte(value);
+			if (key < 0 || key > 26) {
+				System.out.println("Could not interpret the key argument.");
+				key = null;
+				return;
+			}
+			decrypt = false;
+			// Encrypts by default if key is provided.
+		} catch (Exception e) {
+			System.out.println("Could not interpret the key argument.");
+			key = 0;
 		}
 	}
 	
+	public static void showHelp() {
+		System.out.println(
+				"Takes an input file, applies Caeser's cypher to it with a given key, and stores the result in an output file.");
+		System.out.println();
+		System.out.println(
+				"Caeser's cypher is an elementary way to encode a message.  It moves each alphabetical character in the file a certain number of steps in the alphabet forward, wrapping around to the beginning of the alphabet for letters twoards the end.");
+		System.out.println();
+		System.out.println("For example, if the key for encryption is 3, then");
+		System.out.println("\tAlphabet ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		System.out.println("gets translated to");
+		System.out.println("\tDoskdehw DEFGHIJKLMNOPQRSTUVWXYZABC");
+		System.out.println();
+		System.out.println("The following arguments are accepted:");
+		System.out.println("\t-i (file)\tThe path to the file to transcode");
+		System.out.println("\t-o (file)\tThe file path to store the results.");
+		System.out.println("\t-k (int 1-26)\tThe key to use for transcoding.");
+		System.out.println("\t-d       \tDecrypt the input file.");
+		System.out.println("\t-e       \tEncrypt the input file (default if key is provided).");
+		System.exit(0);
+	}
+
 	private static boolean isEmpty(String[] s) {
 		return s.length == 0;
 	}
-	
+
 	private static void promptForOptions() {
 		if (decrypt == null) {
 			System.out.println("Would you like to encrypt (E) or decrypt (D)?");
@@ -156,8 +168,7 @@ public class CaeserCypherCommandLineInterface {
 			if (decrypt)
 				System.out.println("What key was used to encrypt the file?");
 			else
-				System.out
-						.println("What key (between 1 and 26) would you like to use to encrypt your file?");
+				System.out.println("What key (between 1 and 26) would you like to use to encrypt your file?");
 			key = getKey(getKB());
 		}
 	}
@@ -196,12 +207,10 @@ public class CaeserCypherCommandLineInterface {
 				// Checks, insensitive to case, if the input matches an option.
 				// Is also forgiving of extra input such as spaces or symbols,
 				// or even a misunderstanding about how much should be typed.
-				if (input.toUpperCase().startsWith(
-						availableOptions[i].toUpperCase()))
+				if (input.toUpperCase().startsWith(availableOptions[i].toUpperCase()))
 					return i;
 			}
-			System.out
-					.println("The input you provided was invalid.  Please enter a valid option.");
+			System.out.println("The input you provided was invalid.  Please enter a valid option.");
 		}
 	}
 
@@ -234,12 +243,10 @@ public class CaeserCypherCommandLineInterface {
 				// Makes sure that files for reading can be read (and therefore
 				// exist)
 				// and that files for writing can be written to.
-				if ((read && (file.isFile() && file.canRead()))
-						|| (write && file.canWrite() && !file.isDirectory()))
+				if ((read && (file.isFile() && file.canRead())) || (write && file.canWrite() && !file.isDirectory()))
 					return file;
 				else
-					System.out
-							.println("The system could not open the file specified.  Please try again.");
+					System.out.println("The system could not open the file specified.  Please try again.");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -265,11 +272,9 @@ public class CaeserCypherCommandLineInterface {
 				if (result > 0 && result <= 26)
 					return result;
 				else
-					System.out
-							.println("You did not input a valid number.  Please try again.");
+					System.out.println("You did not input a valid number.  Please try again.");
 			} catch (NumberFormatException e) {
-				System.out
-						.println("You did not input a valid number. Please try again.");
+				System.out.println("You did not input a valid number. Please try again.");
 			}
 		}
 	}
@@ -313,7 +318,7 @@ public class CaeserCypherCommandLineInterface {
 				fileWriter.close();
 		}
 	}
-	
+
 	private static Byte negate(Byte n) {
 		return (byte) (n.byteValue() * -1);
 	}
