@@ -7,6 +7,6 @@ abstract class Cypher<E> {
 		this.key = key;
 	}
 	
-	abstract public String encode(String s);
-	abstract public String decode(String s);
+	abstract public String encrypt(String s);
+	abstract public String decrypt(String s);
 }

@@ -31,7 +31,7 @@ public class CaeserCypher extends Cypher<LetterKey> {
 	}
 
 	@Override
-	public String encode(String s) {
+	public String encrypt(String s) {
 		String outputString = "";
 		for (char oldChar : s.toCharArray()) {
 			outputString += processUp(oldChar);
@@ -40,7 +40,7 @@ public class CaeserCypher extends Cypher<LetterKey> {
 	}
 
 	@Override
-	public String decode(String s) {
+	public String decrypt(String s) {
 		String outputString = "";
 		for (char oldChar : s.toCharArray()) {
 			outputString += processDown(oldChar);

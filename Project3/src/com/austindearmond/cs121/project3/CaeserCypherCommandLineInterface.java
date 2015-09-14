@@ -2,9 +2,8 @@ package com.austindearmond.cs121.project3;
 
 import java.util.Scanner;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Applies a Caeser Cypher to an input file, writing the results to an output
@@ -158,11 +157,11 @@ public class CaeserCypherCommandLineInterface {
 		}
 		if (null == inputFile) {
 			System.out.println("Please enter the path to your input file.");
-			inputFile = getFile(getKB(), true, false);
+			inputFile = getFile(true, false);
 		}
 		if (null == outputFile) {
 			System.out.println("Please enter the path to your output file.");
-			outputFile = getFile(getKB(), false, true);
+			outputFile = getFile(false, true);
 		}
 		if (key == null) {
 			if (decrypt)
@@ -227,14 +226,14 @@ public class CaeserCypherCommandLineInterface {
 	 *            not need to exist).
 	 * @return Returns a {@link File} with the input path.
 	 */
-	private static File getFile(Scanner kb, boolean read, boolean write) {
+	private static File getFile(boolean read, boolean write) {
 		String input;
 		File file;
 		while (true) {
 			try {
-				input = kb.nextLine();
+				input = getKB().nextLine();
 				if (input.toLowerCase().contains("quit")) {
-					kb.close();
+					closeKB();
 					System.exit(-1);
 				}
 				file = new File(input);
@@ -264,12 +263,12 @@ public class CaeserCypherCommandLineInterface {
 		while (true) {
 			String input = kb.nextLine();
 			if (input.toLowerCase().contains("quit")) {
-				kb.close();
+				closeKB();
 				System.exit(-1);
 			}
 			try {
 				byte result = Byte.parseByte(input);
-				if (result > 0 && result <= 26)
+				if (result >= 0 && result <= 26)
 					return result;
 				else
 					System.out.println("You did not input a valid number.  Please try again.");
@@ -279,47 +278,34 @@ public class CaeserCypherCommandLineInterface {
 		}
 	}
 
-	public static void cypher() throws IOException {
-		if (decrypt)
-			key = negate(key).byteValue();
-		FileReader fileReader = null;
-		FileWriter fileWriter = null;
+	public static void cypher() {
+		String inputString = readFile();
+		CaeserCypher cypher = CaeserCypher.fromByte(key);
+		String outputString = decrypt ? cypher.decrypt(inputString) : cypher.encrypt(inputString);
+		writeFile(outputString);
+		System.out.println("Successfully wrote file!");
+	}
+	
+	private static String readFile() {
 		try {
-			fileReader = new FileReader(inputFile);
-			fileWriter = new FileWriter(outputFile);
-			int c;
-			char cchar;
-			char newchar;
-			while ((c = fileReader.read()) != -1) {
-				cchar = (char) c;
-				if (Character.isUpperCase(cchar)) {
-					newchar = (char) (cchar + key);
-					if (newchar > 'Z')
-						newchar = (char) (newchar - 26);
-					else if (newchar < 'A')
-						newchar = (char) (newchar + 26);
-				} else if (Character.isLowerCase(cchar)) {
-					newchar = (char) (cchar + key);
-					if (newchar > 'z')
-						newchar = (char) (newchar - 26);
-					else if (newchar < 'a')
-						newchar = (char) (newchar + 26);
-				} else
-					newchar = cchar;
-				fileWriter.append(newchar);
-			}
-			System.out.println("Message transcoded!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (null != fileReader)
-				fileReader.close();
-			if (null != fileWriter)
-				fileWriter.close();
+			byte[] encoded = Files.readAllBytes(inputFile.toPath());
+			return new String(encoded);
+		}
+		catch (Exception e) {
+			System.out.println("Could not read the input file.");
+			closeKB();
+			System.exit(-1);
+			return null;
 		}
 	}
-
-	private static Byte negate(Byte n) {
-		return (byte) (n.byteValue() * -1);
+	
+	private static void writeFile(String contents) {
+		try {
+			Files.write(outputFile.toPath(), contents.getBytes());
+		} catch (IOException e) {
+			System.out.println("Could not write the file.");
+			closeKB();
+			System.exit(-1);
+		}
 	}
 }
