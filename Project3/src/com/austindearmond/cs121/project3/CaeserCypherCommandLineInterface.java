@@ -18,7 +18,7 @@ import java.io.IOException;
  * @author Austin DeArmond <ajdearmond@bsu.edu>
  */
 
-public class CaeserCypher {
+public class CaeserCypherCommandLineInterface {
 
 	private static Scanner kb; // Only initialized when needed
 	private static boolean hasKB = false;
