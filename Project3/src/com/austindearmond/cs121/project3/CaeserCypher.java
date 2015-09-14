@@ -16,22 +16,31 @@ import java.io.IOException;
  * end of the alphabet wrap around to the beginning.
  * 
  * @author Austin DeArmond <ajdearmond@bsu.edu>
- * @version 0.2
- * @since 0.2
  */
 
 public class CaeserCypher {
 
 	private static Scanner kb; // Only initialized when needed
 	private static boolean hasKB = false;
+	
+	private static File inputFile;
+	private static File outputFile;
+	private static Boolean decrypt;
+	private static Byte key;
 
 	public static void main(String[] args) {
-		// BEGIN SECTION Arguments {
-		File inputFile = null;
-		File outputFile = null;
-		boolean decryptArgument = false;
-		boolean decrypt = false;
-		byte key = 0;
+		processArguments(args);
+		promptForOptions();
+		try {
+			cypher();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		closeKB();
+	}
+
+	private static void processArguments(String[] args) {
+		if (isEmpty(args)) return;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equalsIgnoreCase("-I")) {
 				if (i+1 >= args.length) {
@@ -75,7 +84,6 @@ public class CaeserCypher {
 						continue;
 					}
 					decrypt = false;
-					decryptArgument = true;
 					// Encrypts by default if key is provided.
 				} catch (Exception e) {
 					System.out.println("Could not interpret the key argument.");
@@ -83,10 +91,8 @@ public class CaeserCypher {
 				}
 			} else if (args[i].equalsIgnoreCase("-E")) {
 				decrypt = false;
-				decryptArgument = true;
 			} else if (args[i].equalsIgnoreCase("-D")) {
 				decrypt = true;
-				decryptArgument = true;
 			} else if (args[i].toLowerCase().contains("-h")) {
 				System.out
 						.println("Takes an input file, applies Caeser's cypher to it with a given key, and stores the result in an output file.");
@@ -122,9 +128,14 @@ public class CaeserCypher {
 				}
 			}
 		}
-		// } END SECTION
-		// BEGIN SECTION Input {
-		if (!decryptArgument) {
+	}
+	
+	private static boolean isEmpty(String[] s) {
+		return s.length == 0;
+	}
+	
+	private static void promptForOptions() {
+		if (decrypt == null) {
 			System.out.println("Would you like to encrypt (E) or decrypt (D)?");
 			int inputOption = getOption(getKB(), new String[] { "e", "d" });
 			// Returns 0 if encrypt chosen or 1 if decrypt chosen.
@@ -141,7 +152,7 @@ public class CaeserCypher {
 			System.out.println("Please enter the path to your output file.");
 			outputFile = getFile(getKB(), false, true);
 		}
-		if (key == 0) {
+		if (key == null) {
 			if (decrypt)
 				System.out.println("What key was used to encrypt the file?");
 			else
@@ -149,15 +160,6 @@ public class CaeserCypher {
 						.println("What key (between 1 and 26) would you like to use to encrypt your file?");
 			key = getKey(getKB());
 		}
-		// } END SECTION
-		// BEGIN SECTION Execution {
-		try {
-			cypher(inputFile, outputFile, decrypt, key);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		closeKB();
-		// } END SECTION
 	}
 
 	private static Scanner getKB() {
@@ -272,10 +274,9 @@ public class CaeserCypher {
 		}
 	}
 
-	public static void cypher(File inputFile, File outputFile, boolean decrypt,
-			byte key) throws IOException {
+	public static void cypher() throws IOException {
 		if (decrypt)
-			key *= -1;
+			key = negate(key).byteValue();
 		FileReader fileReader = null;
 		FileWriter fileWriter = null;
 		try {
@@ -311,5 +312,9 @@ public class CaeserCypher {
 			if (null != fileWriter)
 				fileWriter.close();
 		}
+	}
+	
+	private static Byte negate(Byte n) {
+		return (byte) (n.byteValue() * -1);
 	}
 }
